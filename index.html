@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>С Днем Рождения! Собери все подарки!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            background-color: #0d1117;
+            color: #58a6ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            touch-action: manipulation;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #f78166;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #f76156;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        p, #instructions {
+            text-align: center;
+            margin: 5px 0;
+            font-size: 0.9rem;
+            max-width: 100%;
+            padding: 0 10px;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 60vh;
+            min-height: 300px;
+            max-height: 400px;
+            border: 2px dashed #58a6ff;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px auto;
+            background-color: transparent;
+            touch-action: none;
+        }
+
+        #player {
+            position: absolute;
+            bottom: 10px;
+            width: 20%;
+            max-width: 80px;
+            height: 15px;
+            background-color: #58a6ff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px 2px rgba(88, 166, 255, 0.8);
+            left: 0;
+            transform: translateX(0);
+            transition: transform 0.1s ease;
+        }
+
+        .gift {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            font-size: 25px;
+            text-align: center;
+            line-height: 30px;
+            user-select: none;
+        }
+
+        #score-display {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        #start-button,
+        #restart-button {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            flex: 1;
+        }
+
+        #restart-button {
+            background-color: #da3633;
+            display: none;
+        }
+
+        #final-message {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #3fb950;
+            text-align: center;
+            display: none;
+            text-shadow: 0 0 5px #3fb950;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(13, 17, 23, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #3fb950;
+            z-index: 1000;
+            width: 85%;
+            max-width: 500px;
+        }
+
+        /* Мобильные кнопки управления */
+        #mobile-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            background-color: rgba(88, 166, 255, 0.3);
+            border: 2px solid #58a6ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: #58a6ff;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* Медиа-запросы для адаптивности */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            
+            #game-container {
+                height: 50vh;
+            }
+            
+            #mobile-controls {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+            
+            p, #instructions {
+                font-size: 0.8rem;
+            }
+            
+            #game-container {
+                height: 45vh;
+                min-height: 250px;
+            }
+            
+            .mobile-btn {
+                width: 60px;
+                height: 60px;
+            }
+            
+            #final-message {
+                font-size: 1.2rem;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>С Днем Рождения, Санечка братишка!</h1>
+    <p>Собери 10 подарков, чтобы получить поздравление!</p>
+    <div id="instructions">Управляй: ← → или двигай платформу пальцем</div>
+
+    <div id="score-display">Подарков: 0 / 10</div>
+
+    <div id="game-container">
+        <div id="player"></div>
+    </div>
+
+    <div id="mobile-controls">
+        <div class="mobile-btn" id="left-btn">←</div>
+        <div class="mobile-btn" id="right-btn">→</div>
+    </div>
+
+    <div id="controls">
+        <button id="start-button">Начать Игру!</button>
+        <button id="restart-button">Играть Еще Раз!</button>
+    </div>
+
+    <div id="final-message">
+        🎉 Ты лучший брат на свете! <br />
+        Пусть сбываются мечты и исполняются все твои желания <br />
+        Обняла крепко-крепко, цАлую! 💋❤️
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const scoreDisplay = document.getElementById('score-display');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const finalMessage = document.getElementById('final-message');
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
+
+        let playerX = 0;
+        let playerSpeed = 0;
+        let score = 0;
+        let gameActive = false;
+        let giftLoopId;
+        let isDragging = false;
+        let gameWidth = gameContainer.clientWidth;
+        let playerWidth = player.offsetWidth;
+
+        const giftsEmojis = ['🎂'];
+
+        // Инициализация игры
+        function initGame() {
+            gameWidth = gameContainer.clientWidth;
+            playerWidth = player.offsetWidth;
+            playerX = (gameWidth - playerWidth) / 2;
+            player.style.transform = `translateX(${playerX}px)`;
+        }
+
+        // Обработчики событий для управления
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                movePlayer(e);
+            }
+        });
+        
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', restartGame);
+        
+        // Обработчики для мобильных кнопок
+        leftBtn.addEventListener('touchstart', () => playerSpeed = -10);
+        leftBtn.addEventListener('touchend', () => playerSpeed = 0);
+        rightBtn.addEventListener('touchstart', () => playerSpeed = 10);
+        rightBtn.addEventListener('touchend', () => playerSpeed = 0);
+        
+        // Добавляем обработчики для мыши и касаний
+        gameContainer.addEventListener('mousedown', startDrag);
+        gameContainer.addEventListener('touchstart', startDrag, { passive: false });
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag, { passive: false });
+        
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+        
+        // Предотвращаем стандартное поведение для касаний
+        gameContainer.addEventListener('touchmove', function(e) {
+            if (gameActive) e.preventDefault();
+        }, { passive: false });
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', initGame);
+
+        function startDrag(e) {
+            if (!gameActive) return;
+            isDragging = true;
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+            }
+            drag(e); // Обновляем позицию сразу при начале перетаскивания
+        }
+
+        function drag(e) {
+            if (!isDragging || !gameActive) return;
+            
+            let clientX;
+            if (e.type.includes('mouse')) {
+                clientX = e.clientX;
+            } else if (e.touches) {
+                clientX = e.touches[0].clientX;
+            }
+            
+            if (clientX !== undefined) {
+                const gameRect = gameContainer.getBoundingClientRect();
+                const newX = clientX - gameRect.left - playerWidth / 2;
+                const maxX = gameWidth - playerWidth;
+                
+                playerX = Math.max(0, Math.min(maxX, newX));
+                player.style.transform = `translateX(${playerX}px)`;
+            }
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        function movePlayer(event) {
+            if (!gameActive) return;
+
+            const speed = 20;
+            const maxX = gameWidth - playerWidth;
+
+            if (event.key === 'ArrowLeft') {
+                playerX = Math.max(0, playerX - speed);
+            } else if (event.key === 'ArrowRight') {
+                playerX = Math.min(maxX, playerX + speed);
+            }
+            player.style.transform = `translateX(${playerX}px)`;
+        }
+
+        // Игровой цикл для обновления позиции игрока
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            if (playerSpeed !== 0) {
+                const maxX = gameWidth - playerWidth;
+                playerX = Math.max(0, Math.min(maxX, playerX + playerSpeed));
+                player.style.transform = `translateX(${playerX}px)`;
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function createGift() {
+            if (!gameActive) return;
+
+            const gift = document.createElement('div');
+            gift.classList.add('gift');
+
+            const randomEmoji = giftsEmojis[Math.floor(Math.random() * giftsEmojis.length)];
+            gift.textContent = randomEmoji;
+            gift.style.backgroundColor = 'transparent';
+
+            const xPos = Math.random() * (gameWidth - 30);
+            gift.style.left = xPos + 'px';
+            gift.style.top = '0px';
+
+            gameContainer.appendChild(gift);
+
+            let yPos = 0;
+            const fallSpeed = 2 + Math.random() * 3;
+
+            function fall() {
+                if (!gameActive) {
+                    gift.remove();
+                    return;
+                }
+
+                yPos += fallSpeed;
+                gift.style.top = yPos + 'px';
+
+                const giftRect = gift.getBoundingClientRect();
+                const playerRect = player.getBoundingClientRect();
+                const gameRect = gameContainer.getBoundingClientRect();
+
+                // Проверка столкновения
+                if (
+                    giftRect.bottom >= playerRect.top &&
+                    giftRect.top <= playerRect.bottom &&
+                    giftRect.right >= playerRect.left &&
+                    giftRect.left <= playerRect.right
+                ) {
+                    gift.remove();
+                    updateScore();
+                } else if (yPos > gameRect.height) {
+                    gift.remove();
+                } else {
+                    requestAnimationFrame(fall);
+                }
+            }
+            requestAnimationFrame(fall);
+        }
+
+        function updateScore() {
+            score++;
+            scoreDisplay.textContent = `Подарков: ${score} / 10`;
+
+            if (score >= 10) {
+                endGame(true);
+            }
+        }
+
+        function endGame(isWin) {
+            gameActive = false;
+            playerSpeed = 0;
+            clearInterval(giftLoopId);
+
+            if (isWin) {
+                finalMessage.style.display = 'block';
+                restartButton.style.display = 'block';
+                startButton.style.display = 'none';
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            scoreDisplay.textContent = `Подарков: ${score} / 10`;
+            
+            initGame(); // Переинициализируем игровые параметры
+
+            finalMessage.style.display = 'none';
+            restartButton.style.display = 'none';
+            startButton.style.display = 'none';
+
+            document.querySelectorAll('.gift').forEach(gift => gift.remove());
+
+            gameActive = true;
+            giftLoopId = setInterval(createGift, 1500);
+            gameLoop(); // Запускаем игровой цикл
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        // Инициализация при загрузке
+        window.onload = initGame;
+    </script>
+</body>
+
+</html>
